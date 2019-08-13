@@ -115,8 +115,34 @@ submit very narrow approval sets. But on the other hand I gain trust that the sy
 \item Is there a connection between PageRank / Stationary Markov Chains and weighted tournament solutions?
 \end{itemize}
 
-\
+\subsection{Vision}
+
+\begin{itemize}
+\item Our main goal is ``Collective Decision Making in Constraint Optimization Problems'': This encompasses majority based 
+democratic rules as well as ``social'' (equity/fairness) concepts.
+\item Since we have constraints, we can try to formulate certain minimal requirements to agents that we have to consider. 
+This is important for situations where we can objectively measure fairness/imbalance (e.g.,  access to schools in 5km).
+\item We think that there are several learning situations. For instance, we might start with a somewhat coarse understanding 
+of our agents' preferences and learn about them over the course of optimization. Similarly, 
+\item The availability of MiniZinc voting procedures might lead to increased use of collective optimization in several situations (if fully automatic, e.g.,).
+\item We hope to find ``good'' solutions that lead to consensus. Is there a way we can quantify our uncertainty about our users' preferences? Can evidence about votes update our beliefs about these preferences?
+\item Example: For our metro line design example, we might have a customer profile that tells us which connections are likely to be relevant (and how our population is comprised of students, employees, elderly, etc). Is that profile consistent with the voting behavior of our population? Can we feed back evidence into that model?
+
+\end{itemize}
+
 \section{Problem Instances}
 
+\subsection{Single Bus Tour Design}
+We have a group of $n$ agents that want to decide which sites to visit and when. We have time windows (opening/closing hours), distance travel times, and, of course, personal preferences about
+\begin{itemize}
+\item Which sites do we want to see? 
+\item How much time do we accept to travel?
+\end{itemize}
+For that problem, we assume the capacity of the bus to be sufficient.
+
+\subsection{Multi Bus Tour Design}
+We can even decide how to plan more bus trips (with capacities)
+\subsection{Transport Network Design}
+In transport network design, we plan how buses/trains should be connected as to maximize satisfaction.
 
 \end{document}
