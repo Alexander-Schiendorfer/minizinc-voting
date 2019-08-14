@@ -35,12 +35,15 @@ array[int] of SCORE: solution_pool = [ 4, 5, 2 ];
 
 % against how many solutions in the pool does my next solution win? 
 set of int: POOL = index_set(solution_pool); 
-var 0 .. card(POOL): new_sol_wins; 
+var 0 .. card(POOL)*n: new_sol_borda_sym; 
 
-constraint new_sol_wins = sum(p in POOL) (
+% for symmetric borda, I do not only count how many solutions
+% I already dominate, but I sum up the number of agents
+% that really prefer my new sol. (net(x > y) )
+constraint new_sol_borda_sym = sum(p in POOL) (
    % does the next solution win against solution p?
    % i.e. do more agents prefer new_sol to p ? 
-   bool2int(
+   %bool2int(
      % does agent 1 like new_sol more than p ? 
      bool2int( scores[1] > scorefunc(scores_a1, solution_pool[p]) ) +
      % does agent 2 like new_sol more than p ? 
@@ -48,8 +51,8 @@ constraint new_sol_wins = sum(p in POOL) (
      % does agent 3 like new_sol more than p ?  
      bool2int( scores[3] > scorefunc(scores_a3, solution_pool[p]) ) 
      % is that a majority? i.e., more than n/2 agents 
-     >= 2
-   )
+%     >= 2
+%   )
 );
 
 
