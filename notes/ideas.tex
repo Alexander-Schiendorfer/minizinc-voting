@@ -3,9 +3,49 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
-
+\title{Collective Constraint Optimization}
+\author{Alexander Schiendorfer, Guido Tack}
 \begin{document}
+\maketitle
+\section{Big Picture}
+We believe that in collective constraint optimization, there are at least these classes of objectives (and constraints) to consider:
+\begin{itemize}
+\item ``Classical objective'' objectives such as costs, \textbf{efficiency}, time, makespans etc.
+\item Balance/Fairness/Equity: comparable criteria such as nightshifts per month, distance to closest school (shops), fair allocation of resources e.g. matching internships, 
+\begin{itemize}
+\item Equitability typically requires some sort of anonymity: Everyone pays 20\% tax whereas balance uses progressive/regressive taxation
+\item Be aware that, e.g., the Shapley value characterizes a ``fair'' payment for an agent based on their marginal utility to a coalition of agents. If I add high profits to a group, I get a high payoff. We would consider this proportionality fair and balancing.
+\end{itemize} 
+\item Opinions, preferences that are hard to quantify or even if so, they are hard to objectively compare (e.g., maximize sum of utilities?). ``I like a schedule more than another one if monday starts at noon'', ``I'd rather have a direct connection to the main station than many adjacent small lines.'' Voting probably makes most sense for such cases.
+\end{itemize}
+Fundamentally, we might distinguish harshly between repeated optimization (e.g., online) and single-shot-decisions. This applies to basically all classes of objectives mentioned above.
 
+Most importantly, we envision approaches/algorithms that combine these objectives, depending on the specific problem at hand. For instance, as a case study, consider the problem of designing tour plans to sites of interest for a travel company responsible for a group of people. We can only decide a number of tours, not have each tour be completely personalized for an individual.  Assume that there are constraints on availability of the sites (time windows), the possible travel time (e.g., within a day), minimal number of visits (over a year) to each of the sites, driving costs, etc. We can instantiate the above classes of objectives:
+  
+\begin{itemize}
+\item There are obvious monetary costs involved. A travel company might simply be interested in maximizing their revenue. Simply restricting that, e.g., to the most expensive sites (or those with my largest margins) and ignoring my customers' preferences may not pay off over the long term (I lose customers by means of lousy reviews). Said aspect incentivizes a company to even consider having the customers vote over tour plans. A driving cost factor could be the number of buses needed with respect to both capacity constraints and consumer satisfaction.
+\item With respect to balancing and fairness, we see two possible goals: i) regarding our tour guides or sites, we might have to ensure that the workload (i.e., the rosters) is spread evenly perhaps over multiple time periods; ii) for our travelers, there could be comparable metrics such as the number of feasible sites (e.g., a handicapped person should not have to only choose among incompatible options; similarly, a family could not be able to enter a ``brutal'' museum). 
+\item There are hard-to-quantify preferences such as ``I'd rather pick site $a$ than $b$ but this holds only if person $C$ joins me'' or ``I want to be at Golden Gate only in the morning - I don't care about the afternoon''. Such conflicts need to be resolved via voting since the outcome should be an acceptable compromise for the whole group.
+\end{itemize}
+
+The interplay leads to several possible algorithmic instantiations. CP, in general, helps us to identify only (objectively) meaningful solutions, respecting other objective functions as well. Voting takes precedence when we fail to propose other decision criteria:
+\begin{itemize}
+\item A travel agency might offer only plans that achieve a certain amount of strategic satisfaction. (I should not be excessive -- ``Kaffeefahrt'')
+\item Resource limitations (e.g., the number of available buses or the maximal budget for all sites, the tour guides we need) could be stated as constraints or be an objective.
+\item For comparable metrics concerning balance and equity, rawlsian approaches could be needed (assure that the minimal dissatisfaction is guaranteed).  
+\item For repeated situations, learning about distributions of preferences could help us to properly judge a single occurrence of the optimization problem:
+\begin{itemize}
+\item The preferences of this group are abnormally ``bad'' for some otherwise popular choice of site. Don't force them to take it - we'll find other groups.
+\item This group likes a site that is usually not very popular. Make sure to have them pick it if it makes sense for us strategically, i.e., to meet our quota.
+\end{itemize}
+\end{itemize}
+In summary, one very simple algorithm could proceed as follows:
+\begin{enumerate}
+\item Find out what optima (costs) are even possible. Define an upper acceptable bound.
+\item Define and specify suitable minimal equity/balance constraints. Communicate them effectively to the users.
+\item Optimize according to a social choice function defined by the users' (incomparable) preferences. Pick a choice set $C$ that is quite likely to be equivalent in terms of these preferences (e.g., all approximate Copeland winners).
+\item Optimize according to your original objectives (costs) to find the best option among all that won the voting.  
+\end{enumerate}
 \section{Mission Statement}
 Our core idea is to make voting theory, in particular social choice functions~(SCF), amenable
 to constraint optimization. Why is that even useful and where do we need it? And why is it not
@@ -113,6 +153,8 @@ with me having a free Monday -- but I accepted a worse solution before that -- c
 submit very narrow approval sets. But on the other hand I gain trust that the system offers better solutions when I keep disapproving.
 \item Should we conduct a study that explores our preference landscapes with respect to continuity?
 \item Is there a connection between PageRank / Stationary Markov Chains and weighted tournament solutions?
+\item Sometimes, a matching problem can be asymmetric: Our companies stay the same but our students only have one shot. Unfairness can propagate over years.
+\item How can we deal with symmetries in our allocations and CP solvers? That could require us to form classes of equivalent elements, allocate the classes (perhaps including cardinality). This could lead to 2-step procedures where we first calculate ``optimal'' allocations and then resolve this ``fairly'' by means of lotteries (in case of scarce resources). Such symmetries could be conditional or dynamic, e.g., if two agents only differ in their preference over opinions that are not even feasible. 
 \end{itemize}
 
 \subsection{Vision}
