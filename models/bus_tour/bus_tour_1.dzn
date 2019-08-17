@@ -1,0 +1,21 @@
+Site = { 1,2,3,4,5 };
+hotel = 5;
+distance = [| 0, 3, 13, 9, 4
+            | 3, 0, 12, 8, 7
+            | 13, 12, 0, 4, 9
+            | 9, 8, 4, 0, 5
+            | 4, 7, 9, 5, 0 |];
+
+durationOfVisit = [20, 4, 20, 15, 0];
+siteOpens = [ 4, 4, 10, 10, 0];
+siteCloses = [ 90, 90, 90, 90, 90 ];
+
+Passenger = { 1,2,3 };
+site_score = [| 100, 50, 75, 30, 0
+              | 28, 17, 42, 42, 0
+              | 57, 68, 3, 12, 0 |];
+preferred_n_sites = [ 4, 2, 3 ];
+preferred_travel_time = [ 30, 10, 100 ];
+preference_weights = [| 1,1,1
+                      | 1,1,1
+                      | 1,1,1 |];
