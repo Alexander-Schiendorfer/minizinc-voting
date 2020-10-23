@@ -1,23 +1,21 @@
 import minizinc
 
 from minizinc import Model
-print("Hi there, excited to run MZN")
-# Create a MiniZinc model
+import logging
+from condorcet_runner import CondorcetRunner
+
+logging.basicConfig(filename="minizinc-python.log", level=logging.DEBUG)
 
 from minizinc import Instance, Model, Result, Solver, Status
 
+# hooking up the base model
 gecode = Solver.lookup("gecode")
 m = Model("base_model_with_prefs.mzn")
-inst = Instance(gecode, m)
 
-res: Result = inst.solve()
-print(res.solution)
-while res.status == Status.SATISFIED:
-    with inst.branch() as child:
-        child.add_string("array[AGENTS] of 1..n_options+1: old_rank;")
-        child["old_rank"] = res["rank"]  # copy the current ranks
-        child.add_string("constraint sum(a in AGENTS) ( bool2int(rank[a] < old_rank[a] ) ) > win_thresh;")
+# define core variables of interest (we can have multiple occurrences of the same scores,
+# but the projection onto the variables of interest have to change
+variables_of_interest = ["x", "y"]
+use_weak_condorcet_domination = True
 
-        res = child.solve()
-        if res.solution is not None:
-            print(res.solution)
+condorcet_runner = CondorcetRunner(m, gecode, variables_of_interest, "AGENTS", "agent_prefers", use_weak_condorcet_domination)
+condorcet_runner.run()
