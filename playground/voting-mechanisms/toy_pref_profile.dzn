@@ -1,0 +1,11 @@
+% toy data for preference profiles 
+prefTemplates = [| 1, 2, 4, 3 | 
+   4, 1, 3, 2 |
+   2, 1, 3, 4  
+|];
+
+templateCardinalities = [ 
+2,
+4,
+3
+];
