@@ -2,7 +2,7 @@ import minizinc
 
 from minizinc import Model
 import logging
-from condorcet_runner import CondorcetRunner
+from algorithms.voting_mechanisms.condorcet_runner import CondorcetRunner
 
 logging.basicConfig(filename="minizinc-python.log", level=logging.DEBUG)
 

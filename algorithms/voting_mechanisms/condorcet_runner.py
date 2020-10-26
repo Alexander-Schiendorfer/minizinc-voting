@@ -2,6 +2,7 @@
 from minizinc import Instance, Model, Result, Solver, Status
 PREFERRED_BY_KEY = "preferred_by"
 NUM_VOTERS_KEY = "num_voters"
+
 class CondorcetRunner:
 
 
@@ -13,6 +14,7 @@ class CondorcetRunner:
         self.agent_prefers_key = agent_prefers_key
         self.use_weak_condorcet_domination = use_weak_condorcet_domination
         self.num_voters = 0 # we learn this from the model
+        self.all_solutions = []
 
     def run_basic(self):
         inst = Instance(self.solver, self.model)
@@ -42,6 +44,9 @@ class CondorcetRunner:
                 res = child.solve()
                 if res.solution is not None:
                     print(res.solution)
+
+        self.all_solutions = solution_pool
+        return solution_pool[-1] if len(solution_pool) > 0 else None
 
     def run_extended(self):
         inst = Instance(self.solver, self.model)
@@ -100,7 +105,7 @@ class CondorcetRunner:
     def post_something_changes(self, child, solution_pool):
         for solution in solution_pool:
             # e.g. '(x != 1 \\/ y != 2)'
-            something_changes = "(" + " \/ ".join(
+            something_changes = "(" + r" \/ ".join(
                 [f"{v} != {solution[v]}" for v in self.variables_of_interest]) + ")"
             child.add_string(f"constraint {something_changes};")
 
