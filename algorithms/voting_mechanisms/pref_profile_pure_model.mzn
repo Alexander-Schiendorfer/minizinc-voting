@@ -4,28 +4,32 @@
 
 % --------------------------------------------
 % Actual decision variables
-% now I want just 4 solutions that I can steer with an auxiliary variable
-var 1..3: x;
-var 1..3: y; 
+% now I want just some solutions that I can steer with an auxiliary variable
+var 1..n_options: x;
+var 1..n_options: y; 
+
+% only some pattern of (x,y) that I want to see 
+array[CHOICES, int] of int: pattern_table = array2d(CHOICES, 1..3, [ if j < 3 then c else n_options - c + 1 endif | c in CHOICES, j in 1..3]);
 
 % --------------------------------------------
 % Controllable toy example environment
 % the choices are artificially constrained to 4 solutions, assignments to x and y are meaningless
-int: n_options = 4;
+int: n_options; % = 4;
 var 1..n_options: control;
 set of int: CHOICES = 1..n_options;
 
 int: n_agents = sum(templateCardinalities);
 set of int: AGENTS = 1..n_agents;
 
-array[int,CHOICES] of CHOICES: prefTemplates;
+int: n_vote_templates;
+array[1..n_vote_templates,CHOICES] of CHOICES: prefTemplates;
 
-array[int] of int: templateCardinalities ; 
+array[1..n_vote_templates] of int: templateCardinalities ;
 
-array[int] of int: upr  = 
+array[1..n_vote_templates] of int: upr  =
 [ sum([templateCardinalities[j] | j in 1..i]) | i in index_set(templateCardinalities)];
 
-array[int] of int: lwr = 
+array[1..n_vote_templates] of int: lwr =
 [if i == 1 then 1 else upr[i-1] + 1 endif | i in index_set(templateCardinalities)];
 
 
@@ -51,12 +55,7 @@ constraint forall(a in AGENTS) (
 );
 
 include "table.mzn";
-constraint table([control, x, y], [| 1, 1, 3 | 2, 2, 2 | 3, 1, 2 | 4, 3, 1 |]);
-
-constraint if control = 1 then x = 1 /\ y = 3 endif;
-constraint if control = 2 then x = 2 /\ y = 2 endif;
-constraint if control = 3 then x = 1 /\ y = 2 endif;
-constraint if control = 4 then x = 3 /\ y = 1 endif;
+constraint table([control, x, y], pattern_table);
 
 % for the toy example, these are borda scores
 constraint forall(a in AGENTS) (score[a] = n_options-rank[a]);
@@ -86,21 +85,3 @@ satisfy;
 %constraint sum(a in AGENTS) ( bool2int(rank[a] < old_rank[a] ) ) >= win_thresh;
 % constraint sum(a in AGENTS) ( bool2int(score[a] > old_score[a] ) ) >= win_thresh;
 
-% sample profile from Wallis "The mathematics of elections and voting"
-prefTemplates = 
-[| 1, 3, 4, 2 | 
-   2, 4, 1, 3 |
-   1, 4, 3, 2 |
-   3, 4, 2, 1 |
-   4, 3, 1, 2 |
-   4, 3, 2, 1  
-|];
-
-templateCardinalities = [ 
-5,
-7,
-4,
-3,
-3,
-2
-];

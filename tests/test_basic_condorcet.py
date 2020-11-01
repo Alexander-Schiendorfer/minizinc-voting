@@ -1,6 +1,7 @@
 import unittest
+import options
 
-from minizinc import Solver, Model
+from minizinc import Solver, Model, Instance
 
 from algorithms.voting_mechanisms.condorcet_runner import CondorcetRunner
 
@@ -64,6 +65,34 @@ class MyTestCase(unittest.TestCase):
         condorcet_runner = CondorcetRunner(self.test2, self.gecode, self.variables_of_interest, AGENTS_KEY,
                                            AGENTS_PREFERS_KEY,
                                            False)
+        sol = condorcet_runner.run_basic()
+
+        # We should see: A, B, C, D
+        self.assertEqual(4, sol["control"], "D should be Condorcet winner")
+        self.assertEqual(2, len(condorcet_runner.all_solutions), "We should have seen two solutions in the process.")
+        actual_control_values = [sol["control"] for sol in condorcet_runner.all_solutions]
+        expected_control_values = [1, 4]
+        self.assertListEqual(actual_control_values, expected_control_values, "Should be that stream of solutions")
+
+    def test_python_data_input_model_strict(self):
+        start_model = Model()
+        start_model.add_file(options.DIRECTORY + "algorithms/voting_mechanisms/pref_profile_pure_model.mzn")
+        start_inst = Instance(self.gecode, start_model)
+        start_inst["n_vote_templates"] = len([5, 7, 4, 3, 3, 2])
+        start_inst["templateCardinalities"] = [5, 7, 4, 3, 3, 2]
+        start_inst["n_options"] = 4
+        start_inst["prefTemplates"] = [
+        [1, 3, 4, 2],
+        [2, 4, 1, 3 ],
+        [1, 4, 3, 2 ],
+        [3, 4, 2, 1 ],
+        [4, 3, 1, 2 ],
+        [4, 3, 2, 1 ],
+        ];
+        condorcet_runner = CondorcetRunner(start_model, self.gecode, self.variables_of_interest, AGENTS_KEY,
+                                           AGENTS_PREFERS_KEY,
+                                           False)
+        condorcet_runner.inst = start_inst
         sol = condorcet_runner.run_basic()
 
         # We should see: A, B, C, D

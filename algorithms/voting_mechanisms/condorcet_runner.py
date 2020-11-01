@@ -10,6 +10,7 @@ class CondorcetRunner:
         self.model = model
         self.variables_of_interest = variables_of_interest
         self.solver = solver
+        self.inst = Instance(self.solver, self.model)
         self.agents_key = agents_key
         self.agent_prefers_key = agent_prefers_key
         self.use_weak_condorcet_domination = use_weak_condorcet_domination
@@ -17,11 +18,11 @@ class CondorcetRunner:
         self.all_solutions = []
 
     def run_basic(self):
-        inst = Instance(self.solver, self.model)
+
         # we'll need a solution pool of previously seen solutions
         # to rule out condorcet cycles
         solution_pool = []
-
+        inst = self.inst
         res: Result = inst.solve()
         print(res.solution)
         while res.status == Status.SATISFIED:
