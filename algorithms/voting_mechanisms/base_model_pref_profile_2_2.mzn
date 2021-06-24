@@ -12,8 +12,11 @@ var 1..3: y;
 % Controllable toy example environment
 % the choices are artificially constrained to 4 solutions, assignments to x and y are meaningless
 int: n_options = 4;
-var 1..n_options: control;
+
 set of int: CHOICES = 1..n_options;
+enum Solutions = { A,B,C,D };
+%var 1..n_options: control;
+var Solutions: control;
 
 int: n_agents = sum(templateCardinalities);
 set of int: AGENTS = 1..n_agents;
@@ -50,10 +53,10 @@ constraint forall(a in AGENTS) (
   prefs[a,rank[a]] = control
 );
 
-constraint if control = 1 then x = 1 /\ y = 3 endif;
-constraint if control = 2 then x = 2 /\ y = 2 endif;
-constraint if control = 3 then x = 1 /\ y = 2 endif;
-constraint if control = 4 then x = 3 /\ y = 1 endif;
+constraint if control = A then x = 1 /\ y = 3 endif;
+constraint if control = B then x = 2 /\ y = 2 endif;
+constraint if control = C then x = 1 /\ y = 2 endif;
+constraint if control = D then x = 3 /\ y = 1 endif;
 
 % for the toy example, these are borda scores
 constraint forall(a in AGENTS) (score[a] = n_options-rank[a]);
@@ -85,12 +88,12 @@ satisfy;
 
 % sample profile from Wallis "The mathematics of elections and voting"
 prefTemplates = 
-[| 1, 3, 4, 2 | 
-   2, 4, 1, 3 |
-   1, 4, 3, 2 |
-   3, 4, 2, 1 |
-   4, 3, 1, 2 |
-   4, 3, 2, 1  
+[| A, C, D, B | 
+   B, D, A, C |
+   A, D, C, B |
+   C, D, B, A |
+   D, C, A, B |
+   D, C, B, A  
 |];
 
 templateCardinalities = [ 
