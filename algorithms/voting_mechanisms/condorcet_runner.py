@@ -1,5 +1,8 @@
 
 from minizinc import Instance, Model, Result, Solver, Status
+import os
+from shutil import copyfile
+
 PREFERRED_BY_KEY = "preferred_by"
 NUM_VOTERS_KEY = "num_voters"
 
@@ -16,31 +19,34 @@ class CondorcetRunner:
         self.use_weak_condorcet_domination = use_weak_condorcet_domination
         self.num_voters = 0 # we learn this from the model
         self.all_solutions = []
+        self.debug = False
 
     def run_basic(self):
-
         # we'll need a solution pool of previously seen solutions
-        # to rule out condorcet cycles
+        # to rule out condorcet cycles; a solution is stored as a Python dictionary from variable to value
         solution_pool = []
         inst = self.inst
         res: Result = inst.solve()
+        self.create_debug_folder()
+
+        print("Initial solution of model")
         print(res.solution)
+        model_counter = 0 # necessary for debugging
         while res.status == Status.SATISFIED:
+            model_counter += 1
             with inst.branch() as child:
                 child.add_string(f"array[{self.agents_key}] of par int: old_score;")
                 child["old_score"] = res["score"]  # copy the current ranks
 
                 self.add_condorcet_improvement(child)
 
-                # but it should be a "new" solution
+                # but it should be a "new" solution in terms of the variables that I'm interested in at least
                 solution_dict = {var: res[var] for var in self.variables_of_interest}
                 solution_pool += [solution_dict]
                 self.post_something_changes(child, solution_pool)
 
                 # logging
-                with child.files() as files:
-                    print(files)
-                    # copy files to a dedicated debug folder
+                self.log_and_debug_generated_files(child, model_counter)
 
                 res = child.solve()
                 if res.solution is not None:
@@ -51,16 +57,19 @@ class CondorcetRunner:
 
     def run_extended(self):
         inst = Instance(self.solver, self.model)
+
         # we'll need a solution pool of previously seen solutions
-        # to rule out condorcet cycles
+        # to rule out condorcet cycles; a solution is stored as a Python dictionary from variable to value
         solution_pool = []
 
         res: Result = inst.solve()
         print(res.solution)
         duels = []
         new_solution = None
+        model_counter = 0
 
         while res.status == Status.SATISFIED:
+            model_counter += 1
             old_solution = new_solution
             new_solution = {var: res[var] for var in self.variables_of_interest}
             solution_pool += [new_solution]
@@ -82,9 +91,7 @@ class CondorcetRunner:
                 self.post_something_changes(child, solution_pool)
 
                 # logging
-                with child.files() as files:
-                    print(files)
-                    # copy files to a dedicated debug folder
+                self.log_and_debug_generated_files(child, model_counter)
 
                 res = child.solve()
                 if res.solution is not None:
@@ -100,10 +107,12 @@ class CondorcetRunner:
         # a predicate agent_prefers(a, score_var, old_score_var)
 
         condorcet_comparator = ">=" if self.use_weak_condorcet_domination else ">"
+        # e.g. 'constraint sum(a in AGENTS) ( bool2int(agent_prefers(a, score[a], old_score[a]) ) ) >= max(AGENTS) div 2;'
         child.add_string(
             f"constraint sum(a in {self.agents_key}) ( bool2int({self.agent_prefers_key}(a, score[a], old_score[a]) ) ) {condorcet_comparator} max({self.agents_key}) div 2;")
 
     def post_something_changes(self, child, solution_pool):
+        # an individual constraint is posted for every solution in the pool
         for solution in solution_pool:
             # e.g. '(x != 1 \\/ y != 2)'
             something_changes = "(" + r" \/ ".join(
@@ -116,3 +125,19 @@ class CondorcetRunner:
 
         child.add_string(dueL_bookkeeping_var_def)
         child.add_string(dueL_bookkeeping_var_cons)
+
+    def create_debug_folder(self):
+
+        self.debug_dir = ("debug")
+        if not os.path.isdir(self.debug_dir):
+            os.makedirs(self.debug_dir)
+
+    def log_and_debug_generated_files(self, child, model_counter):
+        with child.files() as files:
+            print(files)
+            if self.debug:
+                # copy files to a dedicated debug folder
+                for item in files[1:]:
+                    filename = os.path.basename(item)
+                    base, extension = os.path.splitext(filename)
+                    copyfile(item, os.path.join(self.debug_dir, f"mzn_condorcet_{model_counter}.{extension}"))

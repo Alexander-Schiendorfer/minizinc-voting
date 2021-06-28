@@ -43,7 +43,7 @@ prefTemplates[agent_to_index[a],c]
 
 
 % for every agent, give me the rank that control achieves
-array[AGENTS] of var 1..n_options: rank;
+array[AGENTS] of var CHOICES: rank;
 
 
 % this will get overwritten by meta-search
