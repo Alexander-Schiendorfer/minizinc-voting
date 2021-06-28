@@ -21,6 +21,7 @@ class CondorcetRunner:
         self.all_solutions = []
         self.debug = False
 
+    # refers to the basic version of Condorcet's procedure in Wallis "The mathematics of elections and voting"
     def run_basic(self):
         # we'll need a solution pool of previously seen solutions
         # to rule out condorcet cycles; a solution is stored as a Python dictionary from variable to value
@@ -55,6 +56,7 @@ class CondorcetRunner:
         self.all_solutions = solution_pool
         return solution_pool[-1] if len(solution_pool) > 0 else None
 
+    # refers to the extended version of Condorcet's procedure in Wallis "The mathematics of elections and voting"
     def run_extended(self):
         inst = Instance(self.solver, self.model)
 
